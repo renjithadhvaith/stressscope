@@ -238,7 +238,7 @@
     <!-- robot -->
     <div class="card robot">
       <h3>🤖 Program the voice</h3>
-      <p class="desc">You're the speech engineer. Slide the dials and press play to feel how each one changes the word. Turn <b>Pitch</b> to zero and hear how robotic flat speech sounds.</p>
+      <p class="desc">You're the speech engineer. Slide the dials and press play to hear the <b>real word</b> change. Turn <b>Pitch</b> to zero for flat robot speech; switch <b>Reduce weak vowels</b> off to hear it chopped into stiff, even syllables.</p>
       <div class="sld"><span class="lb">Pitch rise</span><input type="range" id="rPitch" min="0" max="100" value="100"></div>
       <div class="sld"><span class="lb">Vowel length</span><input type="range" id="rLen" min="0" max="100" value="100"></div>
       <div class="sld"><span class="lb">Loudness</span><input type="range" id="rLoud" min="0" max="100" value="100"></div>
@@ -249,7 +249,7 @@
     <!-- native vs learner -->
     <div class="card">
       <h3>⚖️ Native vs a common mistake</h3>
-      <p class="desc">The usual error: making the stressed syllable <i>louder</i> but keeping pitch and length flat. Hear the difference.</p>
+      <p class="desc">Press <b>Natural</b> to hear the real word, then <b>Learner error</b> to hear it spoken flat and even — every syllable the same, the way it sounds when stress is missing.</p>
       <div class="cmp">
         <div class="col nat"><h4>Natural</h4><svg id="cmpNat" viewBox="0 0 100 40" preserveAspectRatio="none"></svg><button class="ghost" id="playNat" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg> Play</button></div>
         <div class="col err"><h4>Learner error</h4><svg id="cmpErr" viewBox="0 0 100 40" preserveAspectRatio="none"></svg><button class="ghost" id="playErr" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg> Play</button></div>
@@ -298,6 +298,9 @@ let ttsVoice=null;
 function loadTts(){ if(!synth) return; const vs=synth.getVoices()||[]; ttsVoice=vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null; }
 if(synth){ loadTts(); synth.onvoiceschanged=loadTts; }
 function sayWord(w){ if(!synth) return; synth.cancel(); const u=new SpeechSynthesisUtterance(w); if(ttsVoice){u.voice=ttsVoice;u.lang=ttsVoice.lang;} else u.lang='en-US'; u.rate=speed==='slow'?0.6:0.85; synth.speak(u); }
+function ttsText(w){ return (w.w||'').replace(/-[nv]$/,''); }
+function sayShaped(text, o){ if(!synth) return; synth.cancel(); const u=new SpeechSynthesisUtterance(text); if(ttsVoice){u.voice=ttsVoice;u.lang=ttsVoice.lang;} else u.lang='en-US'; u.pitch=o.pitch!=null?Math.max(0,Math.min(2,o.pitch)):1; u.rate=o.rate!=null?Math.max(0.4,Math.min(1.5,o.rate)):0.85; u.volume=o.volume!=null?Math.max(0.1,Math.min(1,o.volume)):1; synth.speak(u); }
+function sayEven(syls, rate){ if(!synth) return; synth.cancel(); (syls||[]).forEach(s=>{ if(!s) return; const u=new SpeechSynthesisUtterance(s); if(ttsVoice){u.voice=ttsVoice;u.lang=ttsVoice.lang;} else u.lang='en-US'; u.pitch=1; u.rate=rate||0.85; u.volume=1; synth.speak(u); }); }
 
 /* ================= settings ================= */
 let voice='male', speed='normal', exaggerate=false;
@@ -729,10 +732,18 @@ document.getElementById('begBtn').addEventListener('click',()=>{ const on=!docum
 /* robot */
 function robotOpts(){ return { pitchScale:(+document.getElementById('rPitch').value)/100, lenScale:0.4+(+document.getElementById('rLen').value)/100, loudScale:0.4+(+document.getElementById('rLoud').value)/100, reduce:document.getElementById('rRed').getAttribute('aria-pressed')==='true' }; }
 document.getElementById('rRed').addEventListener('click',function(){ const on=this.getAttribute('aria-pressed')!=='true'; this.setAttribute('aria-pressed',on); this.textContent=on?'ON':'OFF'; });
-document.getElementById('robotPlay').addEventListener('click',()=> current&&play(current, robotOpts()));
-/* compare plays */
-document.getElementById('playNat').addEventListener('click',()=> current&&play(current,{}));
-document.getElementById('playErr').addEventListener('click',()=> current&&play(current,{flat:true, lenScale:0.6, loudScale:1.4, reduce:false}));
+document.getElementById('robotPlay').addEventListener('click',()=>{
+  if(!current) return;
+  const red=document.getElementById('rRed').getAttribute('aria-pressed')==='true';
+  const pitch=(+document.getElementById('rPitch').value)/50;                 /* 0..2 */
+  const rate=1.25-(+document.getElementById('rLen').value)/100*0.75;         /* more length → slower */
+  const volume=0.35+(+document.getElementById('rLoud').value)/100*0.65;
+  if(red) sayShaped(ttsText(current), {pitch, rate, volume});                /* real word, shaped */
+  else sayEven(current.syl, rate);                                          /* no reduction → even & robotic */
+});
+/* compare — real word, natural vs evenly (the mistake) */
+document.getElementById('playNat').addEventListener('click',()=> current&&sayShaped(ttsText(current), {pitch:1, rate:0.85, volume:1}));
+document.getElementById('playErr').addEventListener('click',()=> current&&sayEven(current.syl, 0.92));
 /* record */
 document.getElementById('recBtn').addEventListener('click', recordMe);
 /* search */
