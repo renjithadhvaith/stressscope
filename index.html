@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StressScope — Renji Resources</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil-900:#181209; --soil-800:#241a10; --dusk-900:#0b1220; --dusk-800:#101a2c;
+    --parchment:#f4ecdc; --parchment-dim:#c9bea9; --parchment-faint:#8d8371;
+    --panel:#1c140b; --panel-2:#221810; --border:#4a3c28; --border-soft:#3a2f1f;
+    --moss:#93b26a; --moss-deep:#6f9048; --root-blue:#74a3d9; --bud-amber:#e7ac5f; --clay:#d67243; --berry:#c67089; --violet:#9c7bc4;
+    --font-display:'Fraunces', Georgia, serif;
+    --font-body:'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; min-height:100%; background:var(--soil-900); color:var(--parchment); font-family:var(--font-body); -webkit-tap-highlight-color:transparent; }
+  body{ background:radial-gradient(120% 90% at 50% -10%, #2a2013 0%, var(--soil-900) 42%, var(--dusk-800) 86%, var(--dusk-900) 100%); min-height:100vh; overflow-x:hidden; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  input{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--bud-amber); outline-offset:3px; border-radius:8px; }
+  ::selection{ background:#e7ac5f44; }
+
+  .wrap{ max-width:1000px; margin:0 auto; padding:26px 18px 100px; }
+
+  header.top{ display:flex; align-items:flex-start; gap:14px; margin-bottom:16px; }
+  header.top .leaf{ width:38px; height:38px; flex:none; margin-top:3px; }
+  header.top h1{ font-family:var(--font-display); font-weight:600; font-size:28px; line-height:1.05; margin:0; }
+  header.top h1 .em{ font-style:italic; font-weight:400; color:var(--moss); }
+  header.top p{ margin:7px 0 0; font-size:13.5px; color:var(--parchment-dim); max-width:64ch; line-height:1.5; }
+
+  .libbar{ background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:14px; }
+  .libbar .field{ display:flex; align-items:center; gap:9px; background:#120c06; border:1px solid var(--border-soft); border-radius:11px; padding:10px 13px; }
+  .libbar .field svg{ width:16px; height:16px; color:var(--parchment-faint); flex:none; }
+  .libbar input{ flex:1; background:none; border:none; outline:none; color:var(--parchment); font-size:14.5px; }
+  .libbar input::placeholder{ color:var(--parchment-faint); }
+  .lib{ display:flex; flex-direction:column; gap:12px; }
+  .patgrp .ph{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--parchment-faint); margin:2px 0 8px; display:flex; align-items:center; gap:9px; }
+  .patgrp .ph .pat{ color:var(--bud-amber); }
+  .wchips{ display:flex; flex-wrap:wrap; gap:7px; }
+  .wchip{ font-size:13.5px; font-weight:600; padding:7px 13px; border-radius:10px; background:linear-gradient(180deg,#20180e,#1a130a); border:1px solid var(--border-soft); color:var(--parchment); transition:all .12s; }
+  .wchip:hover{ transform:translateY(-1px); border-color:var(--moss-deep); }
+  .wchip.sel{ background:var(--parchment); color:var(--soil-900); border-color:var(--parchment); }
+  .wchip .bd{ font-size:9px; font-family:var(--font-mono); color:var(--parchment-faint); margin-left:5px; }
+
+  .scope{ display:none; }
+  .scope.show{ display:block; }
+  .card{ background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:14px; }
+  .card h3{ font-family:var(--font-display); font-weight:600; font-size:15px; margin:0 0 3px; display:flex; align-items:center; gap:9px; }
+  .card .desc{ font-size:12px; color:var(--parchment-faint); margin:0 0 14px; line-height:1.5; }
+
+  /* word head */
+  .whead{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .whead .big{ font-family:var(--font-display); font-weight:700; font-size:34px; line-height:1; }
+  .whead .ipa{ font-family:var(--font-mono); font-size:20px; color:var(--parchment-dim); }
+  .whead .ipa .st{ color:var(--bud-amber); }
+  .whead .syldots{ display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .whead .sd{ font-family:var(--font-mono); font-size:13px; color:var(--parchment-faint); padding:5px 10px; border-radius:8px; border:1px solid var(--border-soft); }
+  .whead .sd.stress{ color:var(--soil-900); background:var(--bud-amber); font-weight:700; border-color:var(--bud-amber); }
+  .whead .sd.sec{ color:var(--bud-amber); border-color:var(--bud-amber); }
+
+  .controls{ display:flex; gap:9px; flex-wrap:wrap; align-items:center; margin-top:15px; }
+  .play{ background:var(--moss-deep); color:#10160a; font-weight:800; font-size:15px; padding:11px 18px; border-radius:12px; display:flex; align-items:center; gap:9px; transition:filter .15s, transform .1s; }
+  .play:hover{ filter:brightness(1.08); } .play:active{ transform:translateY(1px); }
+  .play svg{ width:17px; height:17px; }
+  .ghost{ background:#241a10; border:1px solid var(--border); color:var(--parchment-dim); font-weight:700; font-size:13px; padding:10px 14px; border-radius:11px; display:flex; align-items:center; gap:8px; }
+  .ghost:hover{ border-color:var(--moss-deep); color:var(--parchment); }
+  .ghost svg{ width:15px; height:15px; }
+  .seg{ display:inline-flex; background:#120c06; border:1px solid var(--border-soft); border-radius:9px; padding:3px; gap:2px; }
+  .seg button{ font-size:12px; font-weight:600; color:var(--parchment-dim); padding:5px 11px; border-radius:7px; transition:all .13s; }
+  .seg button[aria-pressed="true"]{ background:var(--bud-amber); color:var(--soil-900); }
+  .toggle{ font-size:12px; font-weight:600; color:var(--parchment-dim); background:#1a130a; border:1px solid var(--border-soft); border-radius:9px; padding:8px 12px; display:flex; align-items:center; gap:7px; }
+  .toggle[aria-pressed="true"]{ background:#2a2013; border-color:var(--bud-amber); color:var(--bud-amber); }
+
+  /* conductor */
+  .conductor{ margin-top:8px; }
+  .cgrid{ display:grid; gap:7px 7px; align-items:stretch; }
+  .rlab{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--parchment-faint); display:flex; align-items:center; }
+  .cyl{ background:#1a130a; border:1px solid var(--border-soft); border-radius:10px; padding:8px 4px; text-align:center; transition:all .12s; }
+  .cyl .s{ font-weight:800; font-size:16px; }
+  .cyl .ip{ font-family:var(--font-mono); font-size:11px; color:var(--parchment-faint); display:block; margin-top:2px; }
+  .cyl.active{ background:var(--bud-amber); color:var(--soil-900); border-color:var(--bud-amber); transform:translateY(-2px); }
+  .cyl.active .ip{ color:#5a3f16; }
+  .cbar{ background:#15100a; border:1px solid var(--border-soft); border-radius:9px; height:52px; display:flex; align-items:flex-end; overflow:hidden; }
+  .cbar i{ display:block; width:100%; border-radius:0 0 8px 8px; transition:filter .12s; }
+  .cbar.length i{ background:linear-gradient(180deg,var(--moss),var(--moss-deep)); }
+  .cbar.loud i{ background:linear-gradient(180deg,var(--clay),#a8542f); }
+  .cbar.active i{ filter:brightness(1.35) saturate(1.2); }
+  .cvow{ text-align:center; font-family:var(--font-mono); font-size:15px; padding:7px 2px; border-radius:9px; border:1px solid var(--border-soft); background:#15100a; }
+  .cvow.full{ color:var(--bud-amber); border-color:#5a4a2a; font-weight:600; }
+  .cvow.reduced{ color:var(--parchment-faint); }
+  .cvow.active{ box-shadow:0 0 0 2px var(--bud-amber) inset; }
+  .melo{ grid-column:2 / -1; }
+  .melo svg{ width:100%; height:70px; display:block; }
+
+  /* physio */
+  .physio{ display:flex; gap:14px; margin-top:14px; flex-wrap:wrap; }
+  .physio .pcell{ flex:1 1 200px; background:#15100a; border:1px solid var(--border-soft); border-radius:12px; padding:13px; text-align:center; }
+  .physio .pcell .t{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--parchment-faint); margin-bottom:6px; display:flex; align-items:center; justify-content:center; gap:7px; }
+  .physio .pcell .read{ font-family:var(--font-mono); font-size:13px; color:var(--bud-amber); font-weight:500; margin-bottom:6px; min-height:16px; }
+  .physio svg{ width:100%; height:84px; }
+  .physio .cap{ font-size:11px; color:var(--parchment-faint); line-height:1.45; margin-top:8px; }
+  .physio .cap b{ color:var(--parchment-dim); }
+  .foldPiece{ transform-box:fill-box; transform-origin:center; }
+
+  /* live search */
+  .libbar .field2{ display:flex; gap:9px; margin-top:10px; }
+  .lookbtn{ background:var(--moss-deep); color:#10160a; font-weight:700; font-size:13px; padding:0 16px; border-radius:11px; white-space:nowrap; display:flex; align-items:center; gap:7px; transition:filter .15s; }
+  .lookbtn:hover{ filter:brightness(1.08); }
+  .libhint{ font-size:11.5px; color:var(--parchment-faint); margin-top:9px; font-family:var(--font-mono); }
+  .loading{ display:none; text-align:center; color:var(--parchment-faint); font-size:13.5px; padding:26px 10px; }
+  .loading.show{ display:block; }
+  .loading .spin{ display:inline-block; width:22px; height:22px; border:3px solid var(--border); border-top-color:var(--moss); border-radius:50%; animation:spin .8s linear infinite; margin-bottom:10px; }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+  .liveBadge{ font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#10160a; background:var(--root-blue); padding:3px 8px; border-radius:999px; }
+  .searcherr{ display:none; background:#2a1414; border:1px solid #5a2f2f; color:#e7a3a3; font-size:12.5px; padding:11px 14px; border-radius:11px; margin-bottom:14px; }
+  .searcherr.show{ display:block; }
+
+  /* robot */
+  .robot .sld{ display:flex; align-items:center; gap:12px; margin-bottom:11px; }
+  .robot .sld .lb{ width:120px; font-size:12.5px; font-weight:600; color:var(--parchment-dim); flex:none; }
+  .robot input[type=range]{ flex:1; accent-color:var(--bud-amber); }
+  .robot .redtog{ font-size:12px; }
+
+  /* compare */
+  .cmp{ display:flex; gap:14px; flex-wrap:wrap; }
+  .cmp .col{ flex:1 1 240px; background:#15100a; border:1px solid var(--border-soft); border-radius:12px; padding:13px; }
+  .cmp .col h4{ margin:0 0 8px; font-size:13px; }
+  .cmp .col.nat h4{ color:var(--moss); } .cmp .col.err h4{ color:var(--clay); }
+  .cmp svg{ width:100%; height:60px; }
+  .cmp .cap{ font-size:12px; color:var(--parchment-dim); margin-top:9px; line-height:1.5; }
+
+  /* content chips */
+  .kv{ display:flex; flex-wrap:wrap; gap:8px; }
+  .kv .item{ font-size:12.5px; color:var(--parchment-dim); background:#15100a; border:1px solid var(--border-soft); border-radius:9px; padding:8px 12px; }
+  .kv .item b{ color:var(--parchment); }
+  .morphrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-family:var(--font-display); font-size:20px; }
+  .morphrow .part{ padding:8px 14px; border-radius:10px; border:1px solid var(--border-soft); }
+  .morphrow .part.weak{ color:var(--parchment-faint); background:#15100a; }
+  .morphrow .part.strong{ color:var(--soil-900); background:var(--bud-amber); font-weight:700; }
+  .morphrow .plus{ color:var(--parchment-faint); font-size:16px; }
+  .jump{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .jump .jw{ font-family:var(--font-mono); font-size:16px; }
+  .jump .jw .mk{ color:var(--bud-amber); font-weight:700; }
+  .jump .arrow{ color:var(--parchment-faint); }
+  .jumpbtn{ font-size:12px; font-weight:700; color:var(--berry); border:1px solid #5a2f45; padding:7px 12px; border-radius:9px; }
+  .jumpbtn:hover{ background:#2a1420; }
+
+  /* record */
+  .rec .recbtn{ background:var(--berry); color:#1a0810; font-weight:800; font-size:14px; padding:11px 18px; border-radius:12px; display:flex; align-items:center; gap:9px; }
+  .rec .recbtn.live{ background:#3a1c2b; color:var(--berry); border:1px solid var(--berry); }
+  .rec .reccmp{ display:none; margin-top:14px; }
+  .rec .reccmp.show{ display:block; }
+  .rec svg{ width:100%; height:66px; }
+  .rec .fb{ font-size:13px; color:var(--parchment-dim); margin-top:10px; line-height:1.55; }
+  .rec .warn{ display:none; font-size:12px; color:var(--clay); margin-top:8px; }
+
+  /* beginner labels swap */
+  body.beginner .tech{ display:none; } body:not(.beginner) .begin{ display:none; }
+
+  footer.foot{ margin-top:34px; text-align:center; font-size:11px; color:var(--parchment-faint); font-family:var(--font-mono); }
+  .empty-scope{ text-align:center; color:var(--parchment-faint); font-size:13.5px; padding:30px 10px; line-height:1.6; }
+  .empty-scope .big{ font-size:30px; display:block; margin-bottom:10px; }
+  @media (prefers-reduced-motion:reduce){ .fold{ animation:none!important; } }
+  @media (max-width:560px){ .whead .big{ font-size:28px; } .rlab{ font-size:9px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <svg class="leaf" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M20 37c0-9 0-16 0-16M20 21c-7 0-12-4-13-13 9 0 14 4 13 13ZM20 21c7 0 12-4 13-13-9 0-14 4-13 13Z" stroke="#93b26a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <h1>StressScope <span class="em">— watch the voice move</span></h1>
+      <p>English stress isn't just “say it louder”. Pick a word and the <b>Conductor</b> plays its melody while every part moves together: pitch rises, the vowel stretches, unstressed vowels shrink to a lazy schwa, and loudness barely changes. See it, hear it, then record yourself.</p>
+    </div>
+  </header>
+
+  <div class="libbar">
+    <div class="field2">
+      <label class="field" style="flex:1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+        <input id="q" type="text" placeholder="Type any English word — e.g. serendipity, photosynthesis…" autocomplete="off">
+      </label>
+      <button class="lookbtn" id="lookBtn">🔎 Look it up</button>
+    </div>
+    <div class="libhint">Any word works — press Enter. The 35 highlighted words also have word history, morphology and stress-shift demos.</div>
+  </div>
+  <div class="searcherr" id="searchErr"></div>
+  <div class="loading" id="loading"><div class="spin"></div><div>Looking up the pronunciation…</div></div>
+  <div class="lib" id="lib"></div>
+
+  <div class="scope" id="scope">
+    <!-- word head + controls -->
+    <div class="card">
+      <div class="whead">
+        <span class="big" id="wBig">—</span>
+        <span class="ipa" id="wIpa"></span>
+        <span class="syldots" id="wDots"></span>
+      </div>
+      <div class="controls">
+        <button class="play" id="playBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg> Play melody</button>
+        <button class="ghost" id="hearBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke-linejoin="round"/><path d="M17 8.5a5 5 0 0 1 0 7" stroke-linecap="round"/></svg> Hear word</button>
+        <div class="seg" id="voiceSeg"><button data-v="male" aria-pressed="true">♂ voice</button><button data-v="female" aria-pressed="false">♀ voice</button></div>
+        <div class="seg" id="tempoSeg"><button data-t="slow" aria-pressed="false">slow</button><button data-t="normal" aria-pressed="true">normal</button></div>
+        <button class="toggle" id="exagBtn" aria-pressed="false">🏫 Classroom exaggerate</button>
+        <button class="toggle" id="begBtn" aria-pressed="false">🌱 Beginner labels</button>
+      </div>
+    </div>
+
+    <!-- conductor -->
+    <div class="card">
+      <h3>🎼 The Pronunciation Conductor</h3>
+      <p class="desc">Press play. The glowing syllable is where the voice is now — watch the melody rise, the length bar stretch, and the vowels light up (full) or fade (reduced).</p>
+      <div class="conductor"><div class="cgrid" id="cgrid"></div></div>
+      <div class="physio">
+        <div class="pcell">
+          <div class="t">🎚️ Vocal folds</div>
+          <div class="read" id="foldRead">press play</div>
+          <svg id="foldsSvg" viewBox="0 0 140 84"></svg>
+          <div class="cap"><b>Higher pitch = faster buzz.</b> Your two vocal folds slap together this many times a second. On the stressed syllable the pitch lifts, so they flutter faster.</div>
+        </div>
+        <div class="pcell">
+          <div class="t">👄 Mouth</div>
+          <div class="read" id="mouthRead">press play</div>
+          <svg id="mouthSvg" viewBox="0 0 140 84"></svg>
+          <div class="cap"><b>Strong = open, weak = tiny.</b> The stressed syllable gets a big, clear vowel; the weak ones shrink to a barely-open “uh” (ə). That shrinking is what makes English sound English.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- robot -->
+    <div class="card robot">
+      <h3>🤖 Program the voice</h3>
+      <p class="desc">You're the speech engineer. Slide the dials and press play to feel how each one changes the word. Turn <b>Pitch</b> to zero and hear how robotic flat speech sounds.</p>
+      <div class="sld"><span class="lb">Pitch rise</span><input type="range" id="rPitch" min="0" max="100" value="100"></div>
+      <div class="sld"><span class="lb">Vowel length</span><input type="range" id="rLen" min="0" max="100" value="100"></div>
+      <div class="sld"><span class="lb">Loudness</span><input type="range" id="rLoud" min="0" max="100" value="100"></div>
+      <div class="sld"><span class="lb">Reduce weak vowels</span><button class="toggle redtog" id="rRed" aria-pressed="true">ON</button></div>
+      <button class="play" id="robotPlay" style="margin-top:6px"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg> Play robot</button>
+    </div>
+
+    <!-- native vs learner -->
+    <div class="card">
+      <h3>⚖️ Native vs a common mistake</h3>
+      <p class="desc">The usual error: making the stressed syllable <i>louder</i> but keeping pitch and length flat. Hear the difference.</p>
+      <div class="cmp">
+        <div class="col nat"><h4>Natural</h4><svg id="cmpNat" viewBox="0 0 100 40" preserveAspectRatio="none"></svg><button class="ghost" id="playNat" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg> Play</button></div>
+        <div class="col err"><h4>Learner error</h4><svg id="cmpErr" viewBox="0 0 100 40" preserveAspectRatio="none"></svg><button class="ghost" id="playErr" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg> Play</button></div>
+      </div>
+      <div class="cmp" style="margin-top:10px"><div class="cap" id="cmpCap"></div></div>
+    </div>
+
+    <!-- word insight -->
+    <div class="card" id="insightCard">
+      <h3>🔎 Inside the word</h3>
+      <div id="insight"></div>
+    </div>
+
+    <!-- record yourself -->
+    <div class="card rec">
+      <h3>🎤 Record yourself</h3>
+      <p class="desc">Say the word once. StressScope draws your pitch and shows where your voice peaked, compared with where the stress should be.</p>
+      <button class="recbtn" id="recBtn">● Record (2s)</button>
+      <div class="warn" id="recWarn">No microphone available or permission was denied — the rest of StressScope still works.</div>
+      <div class="reccmp" id="recCmp">
+        <div class="cmp">
+          <div class="col nat"><h4>Target melody</h4><svg id="recTarget" viewBox="0 0 100 40" preserveAspectRatio="none"></svg></div>
+          <div class="col" style="border-color:#3a4a5a"><h4 style="color:var(--root-blue)">Your voice</h4><svg id="recYou" viewBox="0 0 100 40" preserveAspectRatio="none"></svg></div>
+        </div>
+        <div class="fb" id="recFb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-scope" id="emptyScope"><span class="big">🎼</span>Pick a word above to open its StressScope.</div>
+
+  <footer class="foot">StressScope · part of Renji Resources · the melody is synthesized so it locks to the animation; “Hear word” uses your device voice</footer>
+</div>
+
+<script>
+/* ================= data ================= */
+const WORDS = [{"w": "banana", "disp": "banana", "ipa": "bəˈnænə", "syl": ["ba", "na", "na"], "isyl": ["bə", "næ", "nə"], "st": [0, 1, 0], "vow": ["ə", "æ", "ə"], "red": [1, 0, 1], "origin": ["Wolof/Spanish banana", "English (16th c.)"], "note": "A perfect example: the middle syllable is longer and higher, and BOTH outer vowels shrink to a lazy schwa."}, {"w": "believe", "disp": "believe", "ipa": "bɪˈliːv", "syl": ["be", "lieve"], "isyl": ["bɪ", "liːv"], "st": [0, 1], "vow": ["ɪ", "iː"], "red": [1, 0], "morph": {"pre": "be-", "root": "lieve"}, "note": "The prefix be- stays weak; the root takes the stress."}, {"w": "improve", "disp": "improve", "ipa": "ɪmˈpruːv", "syl": ["im", "prove"], "isyl": ["ɪm", "pruːv"], "st": [0, 1], "vow": ["ɪ", "uː"], "red": [1, 0], "morph": {"pre": "im-", "root": "prove"}, "origin": ["Latin prōde/probare", "Old French", "Middle English"], "note": "Prefix im- is weak; the root 'prove' is strong."}, {"w": "decide", "disp": "decide", "ipa": "dɪˈsaɪd", "syl": ["de", "cide"], "isyl": ["dɪ", "saɪd"], "st": [0, 1], "vow": ["ɪ", "aɪ"], "red": [1, 0], "morph": {"pre": "de-", "root": "cide"}}, {"w": "guitar", "disp": "guitar", "ipa": "gɪˈtɑː", "syl": ["gui", "tar"], "isyl": ["gɪ", "tɑː"], "st": [0, 1], "vow": ["ɪ", "ɑː"], "red": [1, 0]}, {"w": "hotel", "disp": "hotel", "ipa": "həʊˈtel", "syl": ["ho", "tel"], "isyl": ["həʊ", "tel"], "st": [0, 1], "vow": ["əʊ", "e"], "red": [0, 0]}, {"w": "about", "disp": "about", "ipa": "əˈbaʊt", "syl": ["a", "bout"], "isyl": ["ə", "baʊt"], "st": [0, 1], "vow": ["ə", "aʊ"], "red": [1, 0]}, {"w": "computer", "disp": "computer", "ipa": "kəmˈpjuːtə", "syl": ["com", "pu", "ter"], "isyl": ["kəm", "pjuː", "tə"], "st": [0, 1, 0], "vow": ["ə", "uː", "ə"], "red": [1, 0, 1]}, {"w": "important", "disp": "important", "ipa": "ɪmˈpɔːtənt", "syl": ["im", "por", "tant"], "isyl": ["ɪm", "pɔː", "tənt"], "st": [0, 1, 0], "vow": ["ɪ", "ɔː", "ə"], "red": [1, 0, 1]}, {"w": "remember", "disp": "remember", "ipa": "rɪˈmembə", "syl": ["re", "mem", "ber"], "isyl": ["rɪ", "mem", "bə"], "st": [0, 1, 0], "vow": ["ɪ", "e", "ə"], "red": [1, 0, 1]}, {"w": "together", "disp": "together", "ipa": "təˈgeðə", "syl": ["to", "geth", "er"], "isyl": ["tə", "ge", "ðə"], "st": [0, 1, 0], "vow": ["ə", "e", "ə"], "red": [1, 0, 1]}, {"w": "umbrella", "disp": "umbrella", "ipa": "ʌmˈbrelə", "syl": ["um", "brel", "la"], "isyl": ["ʌm", "bre", "lə"], "st": [0, 1, 0], "vow": ["ʌ", "e", "ə"], "red": [0, 0, 1]}, {"w": "tomato", "disp": "tomato", "ipa": "təˈmɑːtəʊ", "syl": ["to", "ma", "to"], "isyl": ["tə", "mɑː", "təʊ"], "st": [0, 1, 0], "vow": ["ə", "ɑː", "əʊ"], "red": [1, 0, 0], "note": "Say “to-MAH-to” (UK) — the US version is “to-MAY-to”, but the stress stays in the middle either way."}, {"w": "apple", "disp": "apple", "ipa": "ˈæpəl", "syl": ["ap", "ple"], "isyl": ["æ", "pəl"], "st": [1, 0], "vow": ["æ", "ə"], "red": [0, 1]}, {"w": "teacher", "disp": "teacher", "ipa": "ˈtiːtʃə", "syl": ["teach", "er"], "isyl": ["tiː", "tʃə"], "st": [1, 0], "vow": ["iː", "ə"], "red": [0, 1], "morph": {"root": "teach", "suf": "-er"}}, {"w": "water", "disp": "water", "ipa": "ˈwɔːtə", "syl": ["wa", "ter"], "isyl": ["wɔː", "tə"], "st": [1, 0], "vow": ["ɔː", "ə"], "red": [0, 1]}, {"w": "happy", "disp": "happy", "ipa": "ˈhæpi", "syl": ["hap", "py"], "isyl": ["hæ", "pi"], "st": [1, 0], "vow": ["æ", "i"], "red": [0, 0]}, {"w": "mountain", "disp": "mountain", "ipa": "ˈmaʊntɪn", "syl": ["moun", "tain"], "isyl": ["maʊn", "tɪn"], "st": [1, 0], "vow": ["aʊ", "ɪ"], "red": [0, 1]}, {"w": "science", "disp": "science", "ipa": "ˈsaɪəns", "syl": ["sci", "ence"], "isyl": ["saɪ", "əns"], "st": [1, 0], "vow": ["aɪ", "ə"], "red": [0, 1]}, {"w": "family", "disp": "family", "ipa": "ˈfæməli", "syl": ["fam", "i", "ly"], "isyl": ["fæ", "mə", "li"], "st": [1, 0, 0], "vow": ["æ", "ə", "i"], "red": [0, 1, 0]}, {"w": "animal", "disp": "animal", "ipa": "ˈænɪməl", "syl": ["an", "i", "mal"], "isyl": ["æ", "nɪ", "məl"], "st": [1, 0, 0], "vow": ["æ", "ɪ", "ə"], "red": [0, 1, 1]}, {"w": "beautiful", "disp": "beautiful", "ipa": "ˈbjuːtɪfəl", "syl": ["beau", "ti", "ful"], "isyl": ["bjuː", "tɪ", "fəl"], "st": [1, 0, 0], "vow": ["uː", "ɪ", "ə"], "red": [0, 1, 1]}, {"w": "difficult", "disp": "difficult", "ipa": "ˈdɪfɪkəlt", "syl": ["dif", "fi", "cult"], "isyl": ["dɪ", "fɪ", "kəlt"], "st": [1, 0, 0], "vow": ["ɪ", "ɪ", "ə"], "red": [0, 1, 1]}, {"w": "elephant", "disp": "elephant", "ipa": "ˈelɪfənt", "syl": ["el", "e", "phant"], "isyl": ["e", "lɪ", "fənt"], "st": [1, 0, 0], "vow": ["e", "ɪ", "ə"], "red": [0, 1, 1]}, {"w": "holiday", "disp": "holiday", "ipa": "ˈhɒlədeɪ", "syl": ["hol", "i", "day"], "isyl": ["hɒ", "lə", "deɪ"], "st": [1, 0, 2], "vow": ["ɒ", "ə", "eɪ"], "red": [0, 1, 0]}, {"w": "photograph", "disp": "photograph", "ipa": "ˈfəʊtəgrɑːf", "syl": ["pho", "to", "graph"], "isyl": ["fəʊ", "tə", "grɑːf"], "st": [1, 0, 2], "vow": ["əʊ", "ə", "ɑː"], "red": [0, 1, 0], "rule": "photo"}, {"w": "photographer", "disp": "photographer", "ipa": "fəˈtɒgrəfə", "syl": ["pho", "tog", "ra", "pher"], "isyl": ["fə", "tɒ", "grə", "fə"], "st": [0, 1, 0, 0], "vow": ["ə", "ɒ", "ə", "ə"], "red": [1, 0, 1, 1], "rule": "photo"}, {"w": "electric", "disp": "electric", "ipa": "ɪˈlektrɪk", "syl": ["e", "lec", "tric"], "isyl": ["ɪ", "lek", "trɪk"], "st": [0, 1, 0], "vow": ["ɪ", "e", "ɪ"], "red": [1, 0, 1], "rule": "electric"}, {"w": "electricity", "disp": "electricity", "ipa": "ɪˌlekˈtrɪsɪti", "syl": ["e", "lec", "tric", "i", "ty"], "isyl": ["ɪ", "lek", "trɪ", "sɪ", "ti"], "st": [0, 2, 1, 0, 0], "vow": ["ɪ", "e", "ɪ", "ɪ", "i"], "red": [1, 0, 0, 1, 0], "rule": "electric"}, {"w": "Japan", "disp": "Japan", "ipa": "dʒəˈpæn", "syl": ["Ja", "pan"], "isyl": ["dʒə", "pæn"], "st": [0, 1], "vow": ["ə", "æ"], "red": [1, 0], "rule": "japan"}, {"w": "Japanese", "disp": "Japanese", "ipa": "ˌdʒæpəˈniːz", "syl": ["Jap", "a", "nese"], "isyl": ["dʒæ", "pə", "niːz"], "st": [2, 0, 1], "vow": ["æ", "ə", "iː"], "red": [0, 1, 0], "rule": "japan"}, {"w": "present-n", "disp": "present (noun)", "ipa": "ˈprezənt", "syl": ["pres", "ent"], "isyl": ["pre", "zənt"], "st": [1, 0], "vow": ["e", "ə"], "red": [0, 1], "nv": "present", "note": "A gift or 'now'. Stress at the FRONT for the noun."}, {"w": "present-v", "disp": "present (verb)", "ipa": "prɪˈzent", "syl": ["pre", "sent"], "isyl": ["prɪ", "zent"], "st": [0, 1], "vow": ["ɪ", "e"], "red": [1, 0], "nv": "present", "note": "To show or give. Stress at the BACK for the verb."}, {"w": "record-n", "disp": "record (noun)", "ipa": "ˈrekɔːd", "syl": ["rec", "ord"], "isyl": ["re", "kɔːd"], "st": [1, 0], "vow": ["e", "ɔː"], "red": [0, 0], "nv": "record", "note": "A disc or a best score — stress at the FRONT."}, {"w": "record-v", "disp": "record (verb)", "ipa": "rɪˈkɔːd", "syl": ["re", "cord"], "isyl": ["rɪ", "kɔːd"], "st": [0, 1], "vow": ["ɪ", "ɔː"], "red": [1, 0], "nv": "record", "note": "To capture sound — stress at the BACK."}];
+const WMAP = {}; WORDS.forEach((w,i)=>{ w.i=i; WMAP[w.w]=w; });
+function patLabel(st){ return st.map(s=> s===1?'STRONG': s===2?'strong':'weak').join('–'); }
+
+/* ================= audio core ================= */
+let audioCtx=null;
+function ac(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } } if(audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+const synth=window.speechSynthesis;
+let ttsVoice=null;
+function loadTts(){ if(!synth) return; const vs=synth.getVoices()||[]; ttsVoice=vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null; }
+if(synth){ loadTts(); synth.onvoiceschanged=loadTts; }
+function sayWord(w){ if(!synth) return; synth.cancel(); const u=new SpeechSynthesisUtterance(w); if(ttsVoice){u.voice=ttsVoice;u.lang=ttsVoice.lang;} else u.lang='en-US'; u.rate=speed==='slow'?0.6:0.85; synth.speak(u); }
+
+/* ================= settings ================= */
+let voice='male', speed='normal', exaggerate=false;
+let current=null, rafId=null;
+
+/* vowel openness for mouth animation */
+function openness(v){ const c=v[0];
+  if('aæɑʌɒ'.includes(c)) return 1;
+  if('eɛɔɜ'.includes(c)) return 0.62;
+  if(c==='ə') return 0.45;
+  if(c==='o'||c==='ʊ') return 0.5;
+  return 0.28; /* i, ɪ, u, iː etc close */
+}
+
+/* per-syllable metrics */
+function metricsFor(w, opts){
+  opts=opts||{};
+  const vp = voice==='female' ? {base:205, range:80} : {base:118, range:58};
+  const pScale = (opts.pitchScale==null?1:opts.pitchScale) * (exaggerate?1.55:1) * (opts.flat?0:1);
+  const lScale = (opts.lenScale==null?1:opts.lenScale) * (exaggerate?1.3:1);
+  const loScale= (opts.loudScale==null?1:opts.loudScale);
+  const reduce = opts.reduce==null?true:opts.reduce;
+  return w.syl.map((s,i)=>{
+    const st=w.st[i];
+    const pitchLevel = st===1?1.0: st===2?0.6:0.26;
+    let lenLevel = st===1?1.0: st===2?0.72: (w.red[i]?0.42:0.55);
+    const loudLevel = (st===1?0.78: st===2?0.64:0.5);
+    const decl = 1 - i*0.045;
+    const hz = Math.round(vp.base + vp.range*pitchLevel*decl*pScale);
+    const isReduced = reduce && w.red[i];
+    return { syl:s, ipa:w.isyl[i], vowel:w.vow[i], stress:st,
+      hz, len: Math.max(0.32, lenLevel*lScale), loud: Math.min(1, loudLevel*loScale),
+      reduced:isReduced, open: isReduced?0.4:openness(w.vow[i]) };
+  });
+}
+function schedule(mets){
+  const base=0.36/(speed==='slow'?0.62:1);
+  const durs=mets.map(m=>base*(0.55+m.len));
+  const total=durs.reduce((a,b)=>a+b,0);
+  const starts=[]; let t=0; durs.forEach(d=>{ starts.push(t); t+=d; });
+  return {durs, total, starts};
+}
+function hzRange(mets){ const hs=mets.map(m=>m.hz); return {min:Math.min(...hs), max:Math.max(...hs)}; }
+
+/* ================= play (audio + animation) ================= */
+function stopPlay(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
+function play(w, opts){
+  const c=ac(); if(!c){ return; }
+  stopPlay();
+  const mets=metricsFor(w, opts||{});
+  const sc=schedule(mets);
+  const t0=c.currentTime+0.05;
+  /* oscillator melody */
+  const osc=c.createOscillator(); osc.type='sawtooth';
+  const filt=c.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=1200; filt.Q.value=6;
+  const gain=c.createGain(); gain.gain.value=0.0001;
+  const vib=c.createOscillator(); vib.frequency.value=5; const vibG=c.createGain(); vibG.gain.value=3;
+  vib.connect(vibG); vibG.connect(osc.frequency);
+  osc.connect(filt); filt.connect(gain); gain.connect(c.destination);
+  let t=t0;
+  mets.forEach((m,i)=>{
+    const d=sc.durs[i];
+    osc.frequency.setValueAtTime(Math.max(70,m.hz*0.95), t);
+    osc.frequency.linearRampToValueAtTime(m.hz, t+d*0.35);
+    osc.frequency.linearRampToValueAtTime(Math.max(70,m.hz*0.97), t+d*0.98);
+    const peak=0.05+0.11*m.loud;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(peak, t+0.03);
+    gain.gain.setValueAtTime(peak, t+d*0.68);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+d*0.97);
+    t+=d;
+  });
+  osc.start(t0); vib.start(t0); osc.stop(t+0.05); vib.stop(t+0.05);
+  animate(t0, mets, sc);
+}
+function animate(t0, mets, sc){
+  const cgrid=document.getElementById('cgrid');
+  const dot=document.getElementById('melodot');
+  const foldsSvg=document.getElementById('foldsSvg');
+  const foldRead=document.getElementById('foldRead');
+  const mouth=document.getElementById('mouthShape');
+  const mouthVow=document.getElementById('mouthVow');
+  const mouthRead=document.getElementById('mouthRead');
+  const hr=hzRange(mets);
+  function y(hz){ const pad=(hr.max-hr.min)||1; return 60 - ((hz-hr.min)/(pad))*46 - 7; }
+  function frame(){
+    const c=ac(); const e=c.currentTime-t0;
+    if(e>=sc.total || e<0 && e< -1){ endFrame(); return; }
+    const el=Math.max(0,e);
+    const frac=Math.min(1, el/sc.total);
+    /* current syllable */
+    let si=0; for(let k=0;k<sc.starts.length;k++){ if(el>=sc.starts[k]) si=k; }
+    cgrid.querySelectorAll('[data-si]').forEach(n=>n.classList.toggle('active', +n.dataset.si===si));
+    /* melody dot: x by time frac, y by interpolated hz */
+    if(dot){
+      const x=frac*100;
+      const hz=hzAt(el, mets, sc);
+      dot.setAttribute('cx', x); dot.setAttribute('cy', y(hz));
+    }
+    /* folds vibration speed & mouth open from current syllable */
+    const m=mets[si];
+    if(foldsSvg){ const cyc=Math.max(0.10, 26/m.hz); foldsSvg.style.setProperty('--cyc', cyc.toFixed(3)+'s'); }
+    if(foldRead){ foldRead.textContent = Math.round(m.hz)+' Hz · '+(m.hz>=165?'fast buzz':m.hz>=135?'medium buzz':'slow buzz'); }
+    if(mouth){ const o=m.open; mouth.setAttribute('ry', (4+o*20).toFixed(1)); mouth.setAttribute('rx', (26-o*5).toFixed(1)); }
+    if(mouthVow){ mouthVow.textContent=m.vowel; }
+    if(mouthRead){ mouthRead.textContent = m.reduced ? m.vowel+' · relaxed (weak)' : m.vowel+' · '+(m.open>0.7?'wide open':'open'); }
+    rafId=requestAnimationFrame(frame);
+  }
+  function endFrame(){ stopPlay(); cgrid.querySelectorAll('[data-si]').forEach(n=>n.classList.remove('active')); if(foldsSvg) foldsSvg.style.setProperty('--cyc','0.42s'); if(foldRead) foldRead.textContent='press play'; if(mouthRead) mouthRead.textContent='press play'; }
+  rafId=requestAnimationFrame(frame);
+}
+function hzAt(el, mets, sc){
+  /* piecewise between syllable centers */
+  const centers=sc.starts.map((s,i)=> s+sc.durs[i]/2);
+  if(el<=centers[0]) return mets[0].hz;
+  if(el>=centers[centers.length-1]) return mets[mets.length-1].hz;
+  for(let i=0;i<centers.length-1;i++){ if(el>=centers[i]&&el<=centers[i+1]){ const f=(el-centers[i])/(centers[i+1]-centers[i]); return mets[i].hz+(mets[i+1].hz-mets[i].hz)*f; } }
+  return mets[mets.length-1].hz;
+}
+
+/* ================= build conductor ================= */
+function meloPath(mets, flat){
+  const hr=hzRange(mets);
+  const sc=schedule(mets);
+  const pts=mets.map((m,i)=>{ const cx=((sc.starts[i]+sc.durs[i]/2)/sc.total)*100; const hz=flat?(hr.min+hr.max)/2:m.hz; const pad=(hr.max-hr.min)||1; const cy= flat?30: (60-((hz-hr.min)/pad)*46-7); return [cx,cy]; });
+  const ends=[[0,pts[0][1]], ...pts, [100,pts[pts.length-1][1]]];
+  let d='M '+ends[0][0]+' '+ends[0][1];
+  for(let i=1;i<ends.length;i++){ const [x,yy]=ends[i]; const [px,py]=ends[i-1]; const mx=(px+x)/2; d+=` Q ${px} ${py} ${mx} ${(py+yy)/2}`; d+=` T ${x} ${yy}`; }
+  return {d, pts};
+}
+function buildConductor(w){
+  const mets=metricsFor(w,{});
+  const cgrid=document.getElementById('cgrid');
+  const n=w.syl.length;
+  const cols='58px '+ mets.map(m=>(0.6+m.len).toFixed(2)+'fr').join(' ');
+  cgrid.style.gridTemplateColumns=cols;
+  const maxLen=Math.max(...mets.map(m=>m.len)), maxLoud=Math.max(...mets.map(m=>m.loud));
+  let html='';
+  /* row 1: labels + syllables */
+  html+=`<div class="rlab"></div>`;
+  mets.forEach((m,i)=> html+=`<div class="cyl" data-si="${i}"><span class="s">${m.syl}</span><span class="ip">${m.ipa}</span></div>`);
+  /* row 2: melody (spans) */
+  const mp=meloPath(mets,false);
+  html+=`<div class="rlab"><span class="tech">Pitch</span><span class="begin">Voice ↗</span></div>`;
+  html+=`<div class="melo"><svg viewBox="0 0 100 60" preserveAspectRatio="none">
+      <path d="${mp.d}" fill="none" stroke="var(--bud-amber)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      ${mp.pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.4" fill="var(--bud-amber)"/>`).join('')}
+      <circle id="melodot" cx="0" cy="30" r="4" fill="#fff" stroke="var(--bud-amber)" stroke-width="2"/>
+    </svg></div>`;
+  /* row 3: length */
+  html+=`<div class="rlab"><span class="tech">Length</span><span class="begin">Hold ━</span></div>`;
+  mets.forEach((m,i)=> html+=`<div class="cbar length" data-si="${i}"><i style="height:${Math.round(m.len/ (maxLen||1)*100)}%"></i></div>`);
+  /* row 4: loudness */
+  html+=`<div class="rlab"><span class="tech">Loud</span><span class="begin">Strong 🔊</span></div>`;
+  mets.forEach((m,i)=> html+=`<div class="cbar loud" data-si="${i}"><i style="height:${Math.round(m.loud/(maxLoud||1)*100)}%"></i></div>`);
+  /* row 5: vowel */
+  html+=`<div class="rlab"><span class="tech">Vowel</span><span class="begin">Relax 😴</span></div>`;
+  mets.forEach((m,i)=> html+=`<div class="cvow ${m.reduced?'reduced':'full'}" data-si="${i}">${m.vowel}</div>`);
+  cgrid.innerHTML=html;
+  buildPhysio(mets);
+}
+function buildPhysio(mets){
+  const si = current ? current.st.indexOf(1) : 0;
+  const m0 = mets[si] || mets[0];
+  /* vocal folds — the glottis seen from above: two folds with a slit that opens & shuts */
+  document.getElementById('foldsSvg').innerHTML=`
+    <text x="70" y="12" text-anchor="middle" font-family="var(--font-mono)" font-size="8" fill="#8d8371">the glottis, from above</text>
+    <g class="foldL foldPiece"><path d="M26 20 Q70 26 72 46 Q70 66 26 72 Q46 46 26 20 Z" fill="#a86a4a" stroke="#d69272" stroke-width="1.5"/></g>
+    <g class="foldR foldPiece"><path d="M114 20 Q70 26 68 46 Q70 66 114 72 Q94 46 114 20 Z" fill="#a86a4a" stroke="#d69272" stroke-width="1.5"/></g>
+    <line x1="70" y1="24" x2="70" y2="68" stroke="var(--bud-amber)" stroke-width="1.2" opacity="0.55"/>`;
+  if(!document.getElementById('foldkf')){
+    const st=document.createElement('style'); st.id='foldkf';
+    st.textContent='@keyframes glotL{0%,100%{transform:translateX(0)}50%{transform:translateX(-9px)}}@keyframes glotR{0%,100%{transform:translateX(0)}50%{transform:translateX(9px)}}#foldsSvg .foldL{animation:glotL var(--cyc,0.42s) ease-in-out infinite}#foldsSvg .foldR{animation:glotR var(--cyc,0.42s) ease-in-out infinite}';
+    document.head.appendChild(st);
+  }
+  document.getElementById('foldsSvg').style.setProperty('--cyc','0.42s');
+  document.getElementById('foldRead').textContent='press play';
+  /* mouth — lips with an opening that grows on full vowels */
+  document.getElementById('mouthSvg').innerHTML=`
+    <text id="mouthVow" x="70" y="18" text-anchor="middle" font-family="var(--font-mono)" font-size="17" fill="var(--bud-amber)">${m0.vowel}</text>
+    <path d="M36 50 Q70 41 104 50" fill="none" stroke="var(--clay)" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse id="mouthShape" cx="70" cy="56" rx="24" ry="6" fill="#1c0f0d" stroke="var(--clay)" stroke-width="2.5"/>`;
+  document.getElementById('mouthRead').textContent='press play';
+}
+
+/* ================= library ================= */
+const libEl=document.getElementById('lib');
+function buildLib(filter){
+  filter=(filter||'').trim().toLowerCase();
+  const groups={};
+  WORDS.forEach(w=>{ if(filter && !w.w.toLowerCase().includes(filter) && !w.disp.toLowerCase().includes(filter)) return; const k=patLabel(w.st); (groups[k]=groups[k]||[]).push(w); });
+  const order=Object.keys(groups).sort((a,b)=> a.split('–').length-b.split('–').length || a.localeCompare(b));
+  libEl.innerHTML = order.map(k=>`<div class="patgrp"><div class="ph">stress pattern <span class="pat">${k}</span></div><div class="wchips">${groups[k].map(w=>`<button class="wchip ${current&&current.w===w.w?'sel':''}" data-w="${w.w}">${w.disp}${w.rule?'<span class="bd">shifts</span>':''}${w.nv?'<span class="bd">n/v</span>':''}</button>`).join('')}</div></div>`).join('') || `<div class="empty-scope">No word matches “${filter}”. Try another, or clear the search.</div>`;
+  libEl.querySelectorAll('.wchip').forEach(c=>c.addEventListener('click',()=>selectWord(c.dataset.w)));
+}
+
+/* ================= select / render word ================= */
+function selectWord(key){ const w=WMAP[key]; if(!w) return; renderWord(w); }
+function renderWord(w){
+  current=w;
+  document.getElementById('emptyScope').style.display='none';
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('scope').classList.add('show');
+  libEl.querySelectorAll('.wchip').forEach(c=>c.classList.toggle('sel', c.dataset.w===w.w));
+  /* head */
+  document.getElementById('wBig').innerHTML = w.disp + (w.live?' <span class="liveBadge">live</span>':'');
+  document.getElementById('wIpa').innerHTML='/'+w.ipa.replace(/ˈ/g,'<span class="st">ˈ</span>').replace(/ˌ/g,'<span class="st">ˌ</span>')+'/';
+  document.getElementById('wDots').innerHTML=w.syl.map((s,i)=>`<span class="sd ${w.st[i]===1?'stress':w.st[i]===2?'sec':''}">${w.st[i]===1?s.toUpperCase():s}</span>`).join('<span style="color:var(--parchment-faint)">·</span>');
+  buildConductor(w);
+  buildCompare(w);
+  buildInsight(w);
+  buildRecordTarget(w);
+  window.scrollTo({top:document.getElementById('scope').offsetTop-10, behavior:'smooth'});
+}
+
+/* ================= live lookup (Datamuse ARPABET → stress) ================= */
+const ARPA_V={AA:'ɑ',AE:'æ',AH:'ʌ',AO:'ɔ',AW:'aʊ',AX:'ə',AXR:'ɚ',AY:'aɪ',EH:'e',ER:'ɜ',EY:'eɪ',IH:'ɪ',IX:'ɨ',IY:'iː',OW:'əʊ',OY:'ɔɪ',UH:'ʊ',UW:'uː',UX:'ʉ'};
+const ARPA_C={B:'b',CH:'tʃ',D:'d',DH:'ð',F:'f',G:'g',HH:'h',JH:'dʒ',K:'k',L:'l',M:'m',N:'n',NG:'ŋ',P:'p',R:'r',S:'s',SH:'ʃ',T:'t',TH:'θ',V:'v',W:'w',Y:'j',Z:'z',ZH:'ʒ'};
+function arpaToIpa(ph){ const base=ph.replace(/[0-2]$/,''); if(ARPA_V[base]!==undefined){ if(base==='AH'&&/0$/.test(ph)) return 'ə'; if(base==='ER'&&/0$/.test(ph)) return 'ɚ'; return ARPA_V[base]; } return ARPA_C[base]!==undefined?ARPA_C[base]:''; }
+function isVowelPh(ph){ return /[0-2]$/.test(ph); }
+
+/* split spelling into N chunks aligned to vowel-letter groups (best effort) */
+function spellSplit(word, n){
+  const s=word.toLowerCase(); const isV=c=>'aeiouy'.includes(c);
+  const centers=[]; let i=0;
+  while(i<s.length){ if(isV(s[i])){ let j=i; while(j<s.length&&isV(s[j])) j++; centers.push(Math.floor((i+j-1)/2)); i=j; } else i++; }
+  if(centers.length!==n) return null;
+  const bounds=[0]; for(let k=0;k<centers.length-1;k++) bounds.push(Math.ceil((centers[k]+centers[k+1])/2)+1);
+  bounds.push(s.length);
+  const parts=[]; for(let k=0;k<n;k++) parts.push(word.slice(bounds[k], bounds[k+1]));
+  return parts.every(p=>p.length) ? parts : null;
+}
+function parseWord(word, pron, numSyl, pos, def){
+  const phs=pron.trim().split(/\s+/);
+  const syl=[], isyl=[], st=[], vow=[], red=[];
+  let cur='';
+  phs.forEach(ph=>{
+    const ipa=arpaToIpa(ph);
+    if(isVowelPh(ph)){
+      const digit=+ph.slice(-1);
+      st.push(digit===1?1:digit===2?2:0);
+      vow.push(ipa);
+      const base=ph.replace(/[0-2]$/,'');
+      red.push(digit===0 && (base==='AH'||base==='AX'||base==='ER'||base==='IH'||base==='IX'));
+      isyl.push(cur+ipa); cur='';
+    } else { cur+=ipa; }
+  });
+  if(cur && isyl.length) isyl[isyl.length-1]+=cur;   // trailing consonants → last syllable
+  if(!st.length || st.indexOf(1)<0){ if(st.length) st[0]=1; }   // guarantee a primary
+  const n=vow.length;
+  const spelled=spellSplit(word, n) || isyl.slice();
+  /* build ipa string with stress marks before stressed syllable */
+  let ipaStr=''; isyl.forEach((s,i)=>{ ipaStr+=(st[i]===1?'ˈ':st[i]===2?'ˌ':'')+s; });
+  return {w:word, disp:word, ipa:ipaStr, syl:spelled, isyl, st, vow, red, live:true, pos, def};
+}
+async function lookUp(query){
+  query=(query||'').trim().toLowerCase().replace(/[^a-z'-]/g,'');
+  if(!query) return;
+  if(WMAP[query]){ selectWord(query); return; }
+  document.getElementById('searchErr').classList.remove('show');
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('scope').classList.remove('show');
+  document.getElementById('emptyScope').style.display='none';
+  try{
+    const res=await fetch('https://api.datamuse.com/words?sp='+encodeURIComponent(query)+'&md=rspd&max=1');
+    const j=await res.json();
+    document.getElementById('loading').classList.remove('show');
+    if(!j.length || (j[0].word||'').toLowerCase()!==query){ return lookupFail(query); }
+    const r=j[0];
+    const pronTag=(r.tags||[]).find(t=>t.startsWith('pron:'));
+    if(!pronTag){ return lookupFail(query); }
+    const pron=pronTag.slice(5);
+    const pos=(r.tags||[]).find(t=>['n','v','adj','adv'].includes(t))||'';
+    let def=''; if(r.defs&&r.defs.length){ const p=r.defs[0].split('\t'); def=p.length>1?p[1]:p[0]; }
+    const wobj=parseWord(query, pron, r.numSyllables, pos, def);
+    if(!wobj.vow.length){ return lookupFail(query); }
+    renderWord(wobj);
+  }catch(e){
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('searchErr').textContent='Could not reach the dictionary — check your internet connection and try again.';
+    document.getElementById('searchErr').classList.add('show');
+  }
+}
+function lookupFail(q){
+  const el=document.getElementById('searchErr');
+  el.innerHTML='I couldn’t find a pronunciation for “'+q+'”. Try a more common spelling, or pick one of the highlighted library words.';
+  el.classList.add('show');
+  document.getElementById('emptyScope').style.display='block';
+}
+
+/* ================= compare ================= */
+function drawCurve(svgId, mets, flat){ const mp=meloPath(mets, flat); document.getElementById(svgId).innerHTML=`<path d="${mp.d}" fill="none" stroke="${flat?'var(--clay)':'var(--moss)'}" stroke-width="2.5" vector-effect="non-scaling-stroke"/>${mp.pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.2" fill="${flat?'var(--clay)':'var(--moss)'}"/>`).join('')}`; }
+function buildCompare(w){
+  const mets=metricsFor(w,{});
+  drawCurve('cmpNat', mets, false);
+  drawCurve('cmpErr', mets, true);
+  const si=w.st.indexOf(1);
+  document.getElementById('cmpCap').innerHTML=`On the natural version the voice <b>rises</b> and the “${w.syl[si]}” vowel <b>stretches</b>. The learner error keeps pitch and length flat and just pushes <b>loudness</b> — which sounds forced, not stressed.`;
+}
+
+/* ================= insight (morphology, family, rule, origin) ================= */
+const RULES={
+  photo:{title:'The suffix pulls the stress', note:'Adding <b>-er/-y</b> can drag the stress to a new syllable.', pairs:[['photograph',[0]],['photographer',[1]]]},
+  electric:{title:'The suffix -ity pulls stress back', note:'<b>-ity</b> moves the stress one syllable to the right.', pairs:[['electric',[1]],['electricity',[2]]]},
+  japan:{title:'The suffix -ese pulls stress to the end', note:'<b>-ese</b> takes the main stress itself.', pairs:[['Japan',[1]],['Japanese',[2]]]}
+};
+const POSNAME={n:'noun',v:'verb',adj:'adjective',adv:'adverb'};
+function buildInsight(w){
+  let html='';
+  /* definition + POS for live words */
+  if(w.def || w.pos){
+    html+=`<div style="margin-bottom:14px"><div class="kv">${w.pos?`<span class="item"><b>${POSNAME[w.pos]||w.pos}</b></span>`:''}${w.def?`<span class="item">${w.def.charAt(0).toUpperCase()+w.def.slice(1)}</span>`:''}</div>${w.live?`<div class="desc" style="margin-top:9px">This word was looked up live, so the stress, pitch and vowels are real — but the hand-made extras (word history, morphology, stress-shift demos) only appear on the highlighted library words.</div>`:''}</div>`;
+  }
+  /* family */
+  const fam=WORDS.filter(x=>patLabel(x.st)===patLabel(w.st) && x.w!==w.w).slice(0,8);
+  html+=`<div style="margin-bottom:14px"><div class="rlab" style="margin-bottom:8px">Same stress family — <b style="color:var(--bud-amber)">${patLabel(w.st)}</b></div><div class="wchips">${fam.map(x=>`<button class="wchip" data-w="${x.w}">${x.disp}</button>`).join('')||'<span style="color:var(--parchment-faint);font-size:12px">the only one in the library so far</span>'}</div></div>`;
+  /* morphology */
+  if(w.morph){
+    const m=w.morph; let parts=[];
+    if(m.pre) parts.push(`<span class="part weak">${m.pre}</span>`);
+    if(m.root) parts.push(`<span class="part strong">${m.root}</span>`);
+    if(m.suf) parts.push(`<span class="part weak">${m.suf}</span>`);
+    html+=`<div style="margin-bottom:14px"><div class="rlab" style="margin-bottom:8px">Word parts</div><div class="morphrow">${parts.join('<span class="plus">+</span>')}</div><div class="desc" style="margin-top:9px">${m.pre?'The prefix stays weak; ':''}the <b style="color:var(--bud-amber)">root</b> carries the stress.</div></div>`;
+  }
+  /* rule / stress jump */
+  if(w.rule && RULES[w.rule]){
+    const r=RULES[w.rule];
+    html+=`<div style="margin-bottom:14px"><div class="rlab" style="margin-bottom:8px">${r.title}</div><div class="jump" id="jumpRow"></div><div class="desc" style="margin-top:9px">${r.note}</div></div>`;
+  }
+  /* noun/verb */
+  if(w.nv){
+    const pair=WORDS.filter(x=>x.nv===w.nv);
+    html+=`<div style="margin-bottom:14px"><div class="rlab" style="margin-bottom:8px">Same spelling, stress changes the meaning</div><div class="wchips">${pair.map(x=>`<button class="wchip ${x.w===w.w?'sel':''}" data-w="${x.w}">${x.disp}</button>`).join('')}</div>${w.note?`<div class="desc" style="margin-top:9px">${w.note}</div>`:''}</div>`;
+  } else if(w.note){
+    html+=`<div class="desc" style="margin-bottom:14px">💡 ${w.note}</div>`;
+  }
+  /* origin */
+  if(w.origin){
+    html+=`<div><div class="rlab" style="margin-bottom:8px">Word history</div><div class="kv">${w.origin.map(o=>`<span class="item">${o}</span>`).join('<span style="color:var(--parchment-faint);align-self:center">→</span>')}</div></div>`;
+  }
+  document.getElementById('insight').innerHTML=html;
+  document.getElementById('insight').querySelectorAll('.wchip').forEach(c=>c.addEventListener('click',()=>selectWord(c.dataset.w)));
+  /* animated stress jump */
+  if(w.rule && RULES[w.rule]) renderJump(w.rule);
+}
+function renderJump(key){
+  const r=RULES[key]; const row=document.getElementById('jumpRow'); if(!row) return;
+  function render(hi){
+    row.innerHTML = r.pairs.map((p,idx)=>{
+      const ww=WMAP[p[0]]; const stIdx=p[1][0];
+      const parts=ww.syl.map((s,i)=>`<span class="${i===stIdx?'mk':''}">${i===stIdx?s.toUpperCase():s}</span>`).join('·');
+      return `<span class="jw">${parts}</span>`+(idx<r.pairs.length-1?'<span class="arrow">→</span>':'');
+    }).join('') + `<button class="jumpbtn" id="jbtn">▶ watch the stress jump</button>`;
+    document.getElementById('jbtn').addEventListener('click',()=>{ play(WMAP[r.pairs[0][0]],{}); setTimeout(()=>play(WMAP[r.pairs[1][0]],{}), 1400); });
+  }
+  render();
+}
+
+/* ================= record target ================= */
+function buildRecordTarget(w){ drawCurve('recTarget', metricsFor(w,{}), false); }
+
+/* ================= record yourself (mic pitch) ================= */
+let recording=false;
+async function recordMe(){
+  if(recording) return;
+  const w=current; if(!w) return;
+  let stream;
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ document.getElementById('recWarn').style.display='block'; return; }
+  recording=true;
+  const btn=document.getElementById('recBtn'); btn.classList.add('live'); btn.textContent='● Listening…';
+  const c=ac(); const src=c.createMediaStreamSource(stream);
+  const an=c.createAnalyser(); an.fftSize=2048; src.connect(an);
+  const buf=new Float32Array(an.fftSize);
+  const track=[]; const start=performance.now();
+  function samp(){
+    an.getFloatTimeDomainData(buf);
+    const f=autoCorr(buf, c.sampleRate);
+    track.push(f>0?f:null);
+    if(performance.now()-start < 2000){ setTimeout(samp, 45); }
+    else finish();
+  }
+  function finish(){
+    recording=false; btn.classList.remove('live'); btn.textContent='● Record (2s)';
+    stream.getTracks().forEach(t=>t.stop());
+    showRec(track, w);
+  }
+  samp();
+}
+function autoCorr(buf, sr){
+  let rms=0; for(let i=0;i<buf.length;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/buf.length);
+  if(rms<0.008) return -1;
+  let best=-1, bestCorr=0; const MIN=Math.floor(sr/400), MAX=Math.floor(sr/70);
+  for(let lag=MIN; lag<=MAX; lag++){ let corr=0; for(let i=0;i<buf.length-lag;i++) corr+=buf[i]*buf[i+lag]; if(corr>bestCorr){ bestCorr=corr; best=lag; } }
+  if(best<0) return -1; return sr/best;
+}
+function showRec(track, w){
+  document.getElementById('recCmp').classList.add('show');
+  /* draw your pitch normalized */
+  const vals=track.map(v=>v); const real=vals.filter(v=>v);
+  if(real.length<4){ document.getElementById('recYou').innerHTML=''; document.getElementById('recFb').innerHTML='I couldn’t hear a clear voice — try again a bit louder, closer to the mic.'; return; }
+  const mn=Math.min(...real), mx=Math.max(...real), pad=(mx-mn)||1;
+  let d='', started=false;
+  vals.forEach((v,i)=>{ if(!v) return; const x=(i/(vals.length-1))*100; const y=60-((v-mn)/pad)*46-7; d+=(started?' L':'M')+' '+x.toFixed(1)+' '+y.toFixed(1); started=true; });
+  document.getElementById('recYou').innerHTML=`<path d="${d}" fill="none" stroke="var(--root-blue)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`;
+  /* find your peak position (fraction) */
+  let peakI=0,peakV=-1; vals.forEach((v,i)=>{ if(v&&v>peakV){peakV=v;peakI=i;} });
+  const yourFrac=peakI/(vals.length-1);
+  /* target stressed syllable fraction */
+  const mets=metricsFor(w,{}); const sc=schedule(mets); const si=w.st.indexOf(1);
+  const tgtFrac=(sc.starts[si]+sc.durs[si]/2)/sc.total;
+  const diff=yourFrac-tgtFrac;
+  let msg;
+  if(Math.abs(diff)<0.16) msg=`✓ Nice — your pitch peaked right around <b>${w.syl[si].toUpperCase()}</b>, exactly where the stress is.`;
+  else if(diff<0) msg=`Your voice peaked <b>too early</b>. Try holding back and lifting your pitch on <b>${w.syl[si].toUpperCase()}</b>.`;
+  else msg=`Your voice peaked <b>too late</b>. Put the pitch rise on <b>${w.syl[si].toUpperCase()}</b>, then let the rest fall away.`;
+  const range=mx-mn;
+  const flatNote = range<18 ? ' Your pitch stayed quite flat — let it <b>rise</b> more on the strong syllable, don’t just get louder.' : '';
+  document.getElementById('recFb').innerHTML=msg+flatNote;
+}
+
+/* ================= controls ================= */
+document.getElementById('playBtn').addEventListener('click',()=> current&&play(current,{}));
+document.getElementById('hearBtn').addEventListener('click',()=> current&&sayWord(current.w.replace(/-[nv]$/,'')));
+document.getElementById('voiceSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ voice=b.dataset.v; document.getElementById('voiceSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===voice)); if(current) buildConductor(current); }));
+document.getElementById('tempoSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ speed=b.dataset.t; document.getElementById('tempoSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.t===speed)); }));
+document.getElementById('exagBtn').addEventListener('click',()=>{ exaggerate=!exaggerate; document.getElementById('exagBtn').setAttribute('aria-pressed',exaggerate); if(current){ buildConductor(current); buildCompare(current); } });
+document.getElementById('begBtn').addEventListener('click',()=>{ const on=!document.body.classList.contains('beginner'); document.body.classList.toggle('beginner',on); document.getElementById('begBtn').setAttribute('aria-pressed',on); });
+/* robot */
+function robotOpts(){ return { pitchScale:(+document.getElementById('rPitch').value)/100, lenScale:0.4+(+document.getElementById('rLen').value)/100, loudScale:0.4+(+document.getElementById('rLoud').value)/100, reduce:document.getElementById('rRed').getAttribute('aria-pressed')==='true' }; }
+document.getElementById('rRed').addEventListener('click',function(){ const on=this.getAttribute('aria-pressed')!=='true'; this.setAttribute('aria-pressed',on); this.textContent=on?'ON':'OFF'; });
+document.getElementById('robotPlay').addEventListener('click',()=> current&&play(current, robotOpts()));
+/* compare plays */
+document.getElementById('playNat').addEventListener('click',()=> current&&play(current,{}));
+document.getElementById('playErr').addEventListener('click',()=> current&&play(current,{flat:true, lenScale:0.6, loudScale:1.4, reduce:false}));
+/* record */
+document.getElementById('recBtn').addEventListener('click', recordMe);
+/* search */
+document.getElementById('q').addEventListener('input', e=>buildLib(e.target.value));
+document.getElementById('q').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); lookUp(e.target.value); } });
+document.getElementById('lookBtn').addEventListener('click', ()=>lookUp(document.getElementById('q').value));
+
+/* ================= init ================= */
+buildLib('');
+</script>
+</body>
+</html>
