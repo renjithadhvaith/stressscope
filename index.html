@@ -249,13 +249,13 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
 .taffy::before{left:8px}.taffy::after{right:8px}
 .tread{font-family:var(--font-mono);font-size:13px;color:var(--accent);min-height:20px}
 /* tapper */
-.tapstage{position:relative;height:210px;border-radius:18px;background:var(--inset);border:2px solid var(--border-soft);overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.tapstage{position:relative;height:236px;border-radius:18px;background:var(--inset);border:2px solid var(--border-soft);overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .taphit{position:absolute;top:0;bottom:0;border-left:3px dashed var(--accent);opacity:.8}
 .taplane{position:absolute;inset:0}
-.tapill{position:absolute;top:70px;left:0;padding:11px 16px;border-radius:14px;font-weight:800;font-size:18px;background:var(--border);color:var(--parchment);white-space:nowrap;will-change:transform}
-.tapill.s{background:var(--accent);color:var(--soil-900);font-size:24px;top:58px;padding:13px 20px}
+.tapill{position:absolute;top:128px;left:0;padding:11px 16px;border-radius:14px;font-weight:800;font-size:18px;background:var(--border);color:var(--parchment);white-space:nowrap;will-change:transform}
+.tapill.s{background:var(--accent);color:var(--soil-900);font-size:24px;top:114px;padding:13px 20px}
 .tapill.hit{box-shadow:0 0 0 4px var(--moss),0 0 24px var(--moss)}.tapill.miss{box-shadow:0 0 0 4px var(--clay);opacity:.6}
-.tapheart{position:absolute;right:16px;top:14px;width:54px;height:54px;color:var(--berry)}
+.tapheart{position:absolute;left:0;top:12px;width:54px;height:54px;color:var(--berry)}
 @keyframes beat{0%{transform:scale(1)}30%{transform:scale(1.35)}100%{transform:scale(1)}}
 .tapheart.pulse{animation:beat .3s ease-out}
 .taphint{position:absolute;left:14px;bottom:10px;font-size:12px;color:var(--parchment-faint);font-weight:700}
@@ -271,6 +271,7 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
 @media (prefers-reduced-motion:reduce){.face,.robo,.cat,.cattail{animation:none!important}}
 
 /* ===== v3 ===== */
+.taffy.grab,.taffy:focus-visible{outline:4px solid var(--parchment);outline-offset:4px}
 body[data-theme]{--accent:var(--bud-amber)}
 .mini{margin-left:auto;min-height:44px;min-width:44px;padding:0 14px;border-radius:12px;background:var(--accent);color:var(--soil-900);font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 0 #0004}
 .mini svg{width:15px;height:15px}.mini:active{transform:translateY(2px);box-shadow:none}
@@ -453,7 +454,7 @@ body[data-theme="day"] .loudmeter i{background:linear-gradient(90deg,var(--clay)
         <p><b>Example:</b> “the <b>CAT</b> sat on the <b>MAT</b>”. Beats: CAT, MAT, two taps. The words “sat on the” squeeze into the gap. In Japanese, every mora (sound unit) gets an equal beat, so learners tap all six words: the Robot. Tap two beats and the Jazz Cat grooves.</p></details>
       <div class="tapstage" id="tapStage"><div class="taphit" id="tapHit"></div><div class="taplane" id="tapLane"></div>
         <svg class="tapheart" id="tapHeart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11Z"/></svg>
-        <div class="taphint">TAP ANYWHERE</div></div>
+        <div class="taphint">TAP ANYWHERE &middot; or press SPACE / OK</div></div>
       <div class="controls"><button class="play" id="tapGo">Start</button><button class="ghost" id="tapNext">Next sentence</button></div>
       <div class="tapres" id="tapRes"></div>
     </div>
@@ -743,7 +744,7 @@ function renderWord(w){
   buildConductor(w);
   buildCompare(w);
   buildInsight(w);
-  buildRecordTarget(w);
+  buildRecordTarget(w); if(document.body.dataset.tab==='arcade') buildTaffy(w);
   window.scrollTo({top:document.getElementById('scope').offsetTop-10, behavior:'smooth'});
 }
 
@@ -1005,7 +1006,7 @@ $('skinBtn').addEventListener('click',()=>{ const i=SKINS.findIndex(s=>s[0]===do
 (function(){ let k='coaster'; try{ k=localStorage.getItem('ss-skin')||k; }catch(e){} setSkin(k); })();
 
 /* ---- tabs ---- */
-function setTab(t){ document.body.dataset.tab=t; $('tabLab').setAttribute('aria-selected',t==='lab'); $('tabArc').setAttribute('aria-selected',t==='arcade'); if(t==='arcade'&&current) buildTaffy(current); }
+function setTab(t){ document.body.dataset.tab=t; $('tabLab').setAttribute('aria-selected',t==='lab'); $('tabArc').setAttribute('aria-selected',t==='arcade'); if(t==='arcade'){ if(current) buildTaffy(current); if(!Tap.run) Tap.load(); } else { cancelAnimationFrame(Tap.raf); Tap.run=false; $('tapGo').textContent='Start'; } }
 $('tabLab').addEventListener('click',()=>setTab('lab'));
 $('tabArc').addEventListener('click',()=>setTab('arcade'));
 $('rRed').addEventListener('click',()=>{ if(current) buildConductor(current); });
@@ -1054,8 +1055,20 @@ function taffyBind(el,m){
   el.addEventListener('pointermove',e=>{ if(!P.has(e.pointerId)) return; P.set(e.pointerId,{x:e.clientX,y:e.clientY}); apply(P.size>=2 ? base*dist()/d0 : base+(e.clientX-x0)/110); });
   const up=e=>{ if(!P.delete(e.pointerId)) return; if(P.size===0) release(); else { base=s; x0=[...P.values()][0].x; } };
   el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+  el.tabIndex=0; el.setAttribute('role','button'); el.setAttribute('aria-label','Syllable '+m.syl+'. Enter to grab, arrows to stretch or squish, Enter to let go');
+  let grab=false;
+  el.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); grab=!grab; el.classList.toggle('grab',grab); if(grab) $('taffyRead').textContent='Grabbed! Left/Right (or +/-) stretch and squish. Press OK/Enter to let go.'; else release(); }
+    else if(grab&&(e.key==='ArrowRight'||e.key==='ArrowUp'||e.key==='+')){ e.preventDefault(); apply(s+.15); }
+    else if(grab&&(e.key==='ArrowLeft'||e.key==='ArrowDown'||e.key==='-')){ e.preventDefault(); apply(s-.15); }
+    else if(grab&&e.key==='Escape'){ grab=false; el.classList.remove('grab'); release(); }
+  });
+  el.addEventListener('gesturestart',e=>{ e.preventDefault(); base=s; });                       /* Safari trackpad pinch */
+  el.addEventListener('gesturechange',e=>{ e.preventDefault(); apply(base*e.scale); });
+  el.addEventListener('gestureend',e=>{ e.preventDefault(); release(); });
   el.addEventListener('wheel',e=>{ if(!e.ctrlKey) return; e.preventDefault(); apply(s*(1-e.deltaY*.01)); clearTimeout(el._w); el._w=setTimeout(release,250); },{passive:false}); /* trackpad pinch */
   function release(){
+    if(performance.now()-(el._rt||0)<200) return; el._rt=performance.now();
     const rd=$('taffyRead'); let msg;
     if(s>1.2){ blip(m.hz*(1+(s-1)*.35), .3*s, .16); msg='Stretched x'+s.toFixed(1)+': slower and higher, like a stressed vowel.'; }
     else if(s<.8){ blip(m.hz*.75, .1, .05, true); msg='Squished: a quick, quiet “uh” (schwa).'; }
@@ -1074,21 +1087,22 @@ const CAT='<svg viewBox="0 0 110 110"><g class="cat"><path class="cattail" d="M8
 
 Tap.load=function(){
   const toks=TAP_S[Tap.i].split(' ').map(t=>({s:t[0]==='*', t:t.replace('*','')}));
-  const foot=.8, sid=[]; toks.forEach((k,j)=>{ if(k.s) sid.push(j); });
+  const foot=1.3, sid=[]; toks.forEach((k,j)=>{ if(k.s) sid.push(j); });
   sid.forEach((j,n)=>{ toks[j].time=n*foot; });                                   /* stressed words: even heartbeat */
   for(let a=0;a<sid[0];a++) toks[a].time=-(sid[0]-a)*foot/(sid[0]+1);             /* weak words squeezed before the beat */
   sid.forEach((sj,n)=>{ const nx=sid[n+1]===undefined?toks.length:sid[n+1], cnt=nx-sj-1; for(let a=1;a<=cnt;a++) toks[sj+a].time=n*foot+a*foot/(cnt+1); });
   const mn=Math.min(...toks.map(k=>k.time)); toks.forEach(k=>k.time+=1.8-mn);
   Tap.toks=toks; Tap.foot=foot;
+  { const ts=toks.map(k=>k.time).sort((a,b)=>a-b); let mg=9; for(let i=1;i<ts.length;i++) mg=Math.min(mg,ts[i]-ts[i-1]); Tap.mg=mg; }
   $('tapLane').innerHTML=toks.map((k,j)=>'<div class="tapill '+(k.s?'s':'')+'" data-j="'+j+'">'+(k.s?k.t.toUpperCase():k.t)+'</div>').join('');
   toks.forEach((k,j)=>{ k.el=$('tapLane').children[j]; k.th=0; k.tap=0; });
   Tap.draw(0); $('tapRes').innerHTML='';
 };
-Tap.geom=()=>{ const W=$('tapStage').clientWidth; return {hitX:W*.22, pxs:W*.3}; };
-Tap.draw=function(now){ const g=Tap.geom(); $('tapHit').style.left=g.hitX+'px'; Tap.toks.forEach(k=>{ k.el.style.transform='translateX('+(g.hitX+(k.time-now)*g.pxs)+'px)'; }); };
+Tap.geom=()=>{ const W=$('tapStage').clientWidth; return {hitX:W*.22, pxs:Math.max(W*.26, 150/(Tap.mg||.3))};   /* closest two words are always >=150px apart */ };
+Tap.draw=function(now){ const g=Tap.geom(); $('tapHit').style.left=g.hitX+'px'; $('tapHeart').style.left=(g.hitX-27)+'px'; Tap.toks.forEach(k=>{ k.el.style.transform='translateX('+(g.hitX+(k.time-now)*g.pxs)+'px)'; }); };
 Tap.start=function(){
   cancelAnimationFrame(Tap.raf); Tap.load(); Tap.run=true; Tap.hits=0; Tap.extra=0; Tap.t0=performance.now()/1000;
-  $('tapGo').textContent='Playing...';
+  $('tapGo').textContent='Playing...'; if(document.activeElement) document.activeElement.blur();
   const end=Math.max(...Tap.toks.map(k=>k.time))+1;
   (function f(){
     const now=performance.now()/1000-Tap.t0; Tap.draw(now);
@@ -1098,8 +1112,8 @@ Tap.start=function(){
 };
 Tap.tapAt=function(){
   if(!Tap.run) return; const now=performance.now()/1000-Tap.t0; blip(1500,.05,.08);
-  let best=null,bd=9; Tap.toks.forEach(k=>{ const d=Math.abs(k.time-now); if(!k.tap&&d<bd){ bd=d; best=k; } });
-  if(best&&bd<.35){ best.tap=1; if(best.s){ Tap.hits++; best.el.classList.add('hit'); } else { Tap.extra++; best.el.classList.add('miss'); } } else Tap.extra++;
+  let best=null,bd=9; Tap.toks.forEach(k=>{ const d=Math.abs(k.time-now)-(k.s?.06:0); if(!k.tap&&d<bd){ bd=d; best=k; } });
+  if(best&&bd<.3){ best.tap=1; if(best.s){ Tap.hits++; best.el.classList.add('hit'); } else { Tap.extra++; best.el.classList.add('miss'); } } else Tap.extra++;
 };
 Tap.finish=function(){
   Tap.run=false; $('tapGo').textContent='Play again';
@@ -1114,6 +1128,8 @@ Tap.finish=function(){
 $('tapStage').addEventListener('pointerdown',e=>{ e.preventDefault(); Tap.tapAt(); });
 $('tapGo').addEventListener('click',()=>Tap.start());
 $('tapNext').addEventListener('click',()=>{ cancelAnimationFrame(Tap.raf); Tap.run=false; Tap.i=(Tap.i+1)%TAP_S.length; $('tapGo').textContent='Start'; Tap.load(); });
+document.addEventListener('keydown',e=>{ if(Tap.run&&(e.code==='Space'||e.code==='Enter')&&!e.repeat){ e.preventDefault(); Tap.tapAt(); } });
+document.addEventListener('keyup',e=>{ if(Tap.run&&(e.code==='Space'||e.code==='Enter')) e.preventDefault(); });
 Tap.load();
 
 /* ---- Pitch Rollercoaster cart (rides the recorded contour) ---- */
