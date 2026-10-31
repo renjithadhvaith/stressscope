@@ -220,19 +220,20 @@ body:not([data-tab="arcade"]) #scope>.arcade{display:none}
 .legend span.lg{background:var(--inset);border:1px solid var(--border-soft);border-radius:999px;padding:7px 13px;color:var(--parchment-dim)}
 .legend b{color:var(--accent)}
 .th{display:none}
-body[data-theme="coaster"] .th-coaster,body[data-theme="dj"] .th-dj,body[data-theme="monster"] .th-monster{display:inline}
+body[data-theme="day"] .th-coaster,body[data-theme="coaster"] .th-coaster,body[data-theme="dj"] .th-dj,body[data-theme="monster"] .th-monster{display:inline}
 /* rubber band + ghost + robot */
-.cgrid{padding-top:18px}
-.cyl{position:relative;transform-origin:50% 100%;min-height:52px}
+.cgrid{padding-top:4px}
+.cyl{position:relative;transform-origin:50% 100%;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .cyl.strong{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .cyl.strong.active{box-shadow:0 0 24px var(--accent);filter:saturate(1.3)}
-.face{position:absolute;top:-17px;left:50%;margin-left:-14px;width:28px;height:28px;display:none;pointer-events:none}
+.face{position:static;width:26px;height:26px;flex:none;display:none;pointer-events:none;margin-bottom:3px}
+.face.fghost path:first-child{stroke:#7a95c8;stroke-width:1}
 @keyframes floaty{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
 @keyframes chomp{from{transform:scaleY(.65)}to{transform:scaleY(1.15)}}
 #cgrid[data-red="on"] .cyl.weak.isred{transform:scale(.82,.76);opacity:.72;background:#cfe6ff22;border:1.5px dashed #bcd6ffaa;border-radius:20px 20px 8px 8px}
-#cgrid[data-red="on"] .cyl.weak.isred .face.ghost{display:block;animation:floaty 2.2s ease-in-out infinite}
+#cgrid[data-red="on"] .cyl.weak.isred .face.fghost{display:block;animation:floaty 2.2s ease-in-out infinite}
 #cgrid[data-red="off"] .cyl.weak{border-radius:2px;border:2px solid var(--parchment-faint);background:repeating-linear-gradient(45deg,var(--inset2) 0 6px,var(--inset) 6px 12px)}
-#cgrid[data-red="off"] .cyl.weak .face.robot{display:block}
+#cgrid[data-red="off"] .cyl.weak .face.frobot{display:block}
 body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp .45s ease-in-out infinite alternate;transform-origin:50% 60%}
 /* balloon */
 .balloonbox{flex:0 0 130px;text-align:center}
@@ -268,6 +269,31 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
 .cart{position:absolute;left:0;top:0;width:32px;height:30px;pointer-events:none;transform-origin:16px 28px;display:none}
 .cart svg{width:32px;height:30px}
 @media (prefers-reduced-motion:reduce){.face,.robo,.cat,.cattail{animation:none!important}}
+
+/* ===== v3 ===== */
+body[data-theme]{--accent:var(--bud-amber)}
+.mini{margin-left:auto;min-height:44px;min-width:44px;padding:0 14px;border-radius:12px;background:var(--accent);color:var(--soil-900);font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 0 #0004}
+.mini svg{width:15px;height:15px}.mini:active{transform:translateY(2px);box-shadow:none}
+.pcell .t .mini{margin-left:8px}.balloonbox .mini{margin:8px auto 0}
+.charbtn{width:122px;height:122px;flex:none;border-radius:24px;background:var(--inset);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px var(--glow)}
+.why{margin:0 0 12px;background:var(--inset);border:1px solid var(--border-soft);border-radius:12px;padding:2px 14px;font-size:13px;line-height:1.65;color:var(--parchment-dim)}
+.why summary{min-height:46px;display:flex;align-items:center;font-weight:800;color:var(--accent);cursor:pointer}
+.why b{color:var(--parchment)}.why p{margin:0 0 9px}
+/* Day Mode */
+body[data-theme="day"]{--soil-900:#fffaf0;--soil-800:#fff3d6;--dusk-800:#e9f4ff;--dusk-900:#d6ebff;--parchment:#2b2417;--parchment-dim:#54482f;--parchment-faint:#75674b;--panel:#ffffff;--panel-2:#fff8e8;--border:#d9c8a0;--border-soft:#e6d9b8;--moss:#2f8a3a;--moss-deep:#2f7d32;--root-blue:#1f6fbd;--bud-amber:#c2610a;--clay:#c2441c;--berry:#b72f74;--violet:#6b4bb5;--inset:#f6ecd4;--inset2:#f1e4c4;--inset3:#fbf3e0;--glow:transparent}
+body[data-theme="day"] .play,body[data-theme="day"] .lookbtn,body[data-theme="day"] .rec .recbtn{color:#fff}
+body[data-theme="day"] .wchip{background:#fffdf6}
+body[data-theme="day"] .wchip.sel{background:var(--parchment);color:#fff}
+body[data-theme="day"] .toggle[aria-pressed="true"]{background:#ffe9c4}
+body[data-theme="day"] .cyl.active .ip{color:#ffe9c4}
+body[data-theme="day"] .rec .recbtn.live{background:#fde4ef;color:var(--berry)}
+body[data-theme="day"] .jumpbtn:hover{background:#fde4ef}
+body[data-theme="day"] .searcherr{background:#fde8e8;color:#8f2a2a;border-color:#e8b4b4}
+body[data-theme="day"] .taffy.weak{background:linear-gradient(180deg,#7c8fc4,#566aa8);color:#fff}
+body[data-theme="day"] .tapill{background:#6f7fb5;color:#fff}
+body[data-theme="day"] #cgrid[data-red="on"] .cyl.weak.isred{background:#7aa2e026;border-color:#5b7bb5;opacity:.85}
+body[data-theme="day"] .melo path{stroke-width:5!important;filter:drop-shadow(0 3px 0 #0003)}
+body[data-theme="day"] .loudmeter i{background:linear-gradient(90deg,var(--clay),#e8a043)}
 </style>
 </head>
 <body data-theme="coaster" data-tab="lab">
@@ -323,7 +349,7 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
 
     <!-- conductor -->
     <div class="card">
-      <h3> The Pronunciation Conductor</h3>
+      <h3> The Pronunciation Conductor<button class="mini" data-play aria-label="Play this word"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg>Play</button></h3>
       <p class="desc">Press play. The glowing syllable is where the voice is now — watch the melody rise, the length bar stretch, and the vowels light up (full) or fade (reduced).</p>
       <div class="legend">
         <span class="lg"><b>Rubber band:</b> the stressed syllable <b>stretches</b>, weak ones <b>squish</b></span>
@@ -333,13 +359,13 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
       <div class="conductor"><div class="cgrid" id="cgrid"></div></div>
       <div class="physio">
         <div class="pcell">
-          <div class="t"> Vocal folds</div>
+          <div class="t"> Vocal folds<button class="mini" data-play aria-label="Play this word"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg>Play</button></div>
           <div class="read" id="foldRead">press play</div>
           <svg id="foldsSvg" viewBox="0 0 140 84"></svg>
           <div class="cap"><b>Higher pitch = faster buzz.</b> Your two vocal folds slap together this many times a second. On the stressed syllable the pitch lifts, so they flutter faster.</div>
         </div>
         <div class="pcell">
-          <div class="t"> Mouth</div>
+          <div class="t"> Mouth<button class="mini" data-play aria-label="Play this word"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg>Play</button></div>
           <div class="read" id="mouthRead">press play</div>
           <svg id="mouthSvg" viewBox="0 0 140 84"></svg>
           <div class="cap"><b>Strong = open, weak = tiny.</b> The stressed syllable gets a big, clear vowel; the weak ones shrink to a barely-open “uh” (ə). That shrinking is what makes English sound English.</div>
@@ -349,7 +375,7 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
 
     <!-- air pressure / loudness -->
     <div class="card">
-      <h3> Loudness = air pressure</h3>
+      <h3> Loudness = air pressure<button class="mini" data-play aria-label="Play this word"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg>Play</button></h3>
       <p class="desc">Press play on the Conductor above. Watch the air rise from the lungs: on the stressed syllable you push a little more air, so the arrows speed up and widen and the folds swing a touch wider. Loudness comes from <b>air</b>, not from a higher voice.</p>
       <div class="breathwrap">
         <div class="bsvg">
@@ -378,7 +404,7 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
         </div>
         <div class="balloonbox">
           <svg id="balloon" viewBox="0 0 120 170"><g id="balloonG"><ellipse cx="60" cy="62" rx="38" ry="46" fill="var(--berry)"/><ellipse cx="46" cy="44" rx="8" ry="14" fill="#fff" opacity=".35" transform="rotate(20 46 44)"/><path d="M54 106l6 10 6-10Z" fill="var(--berry)"/></g><path d="M60 116q-10 22 2 32t-2 20" stroke="var(--parchment-dim)" fill="none" stroke-width="1.5"/></svg>
-          <div class="balread" id="balRead">press play</div>
+          <div class="balread" id="balRead">press play</div><button class="mini" data-play aria-label="Play this word"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l11-7z"/></svg>Play</button>
         </div>
         <div class="breathinfo">
           <div class="rd" id="loudRead">press play</div>
@@ -413,12 +439,18 @@ body[data-theme="monster"] .cyl.strong .face.bite{display:block;animation:chomp 
     <div class="card arcade" id="taffyCard">
       <h3>Game A: The Taffy Puller</h3>
       <p class="desc">Use <b>two fingers</b> on a syllable: spread them to <b>stretch</b> it, pinch to <b>squish</b> it. (On a mouse: drag sideways.) Let go to hear it. Long = slow and high. Squished = a quiet, quick “uh”.</p>
+      <details class="why"><summary>Why this game?</summary>
+        <p><b>Goal:</b> feel, with your hands, that a stressed syllable is <b>longer and higher</b>, and an unstressed one is <b>shorter, quieter and lazy</b> (schwa).</p>
+        <p><b>Example:</b> com-<b>PU</b>-ter. Stretch <b>pu</b> until it is fat: you hear it get slower and higher. Now squish <b>com</b> and <b>ter</b>: they shrink to a quick “uh”. Japanese learners often give all three the same size (ko-n-pyu-u-ta). Here they must be different sizes.</p></details>
       <div class="taffyrow" id="taffyRow"></div>
       <div class="tread" id="taffyRead">Stretch the glowing syllable!</div>
     </div>
     <div class="card arcade" id="tapCard">
       <h3>Game B: The Heartbeat Tapper</h3>
       <p class="desc">Tap the screen <b>only</b> when a big amber word reaches the dashed line. English has a steady heartbeat on the stressed words; the small words squeeze in between.</p>
+      <details class="why"><summary>Why this game?</summary>
+        <p><b>Goal:</b> feel that English has a <b>steady heartbeat</b> on stressed words, and the small words are squeezed between the beats.</p>
+        <p><b>Example:</b> “the <b>CAT</b> sat on the <b>MAT</b>”. Beats: CAT, MAT, two taps. The words “sat on the” squeeze into the gap. In Japanese, every mora (sound unit) gets an equal beat, so learners tap all six words: the Robot. Tap two beats and the Jazz Cat grooves.</p></details>
       <div class="tapstage" id="tapStage"><div class="taphit" id="tapHit"></div><div class="taplane" id="tapLane"></div>
         <svg class="tapheart" id="tapHeart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11Z"/></svg>
         <div class="taphint">TAP ANYWHERE</div></div>
@@ -557,7 +589,7 @@ function play(w, opts){
     gain.gain.exponentialRampToValueAtTime(0.0001, t+d*0.97);
     t+=d;
   });
-  osc.start(t0); vib.start(t0); osc.stop(t+0.05); vib.stop(t+0.05);
+  try{ if(SS.osc) SS.osc.stop(); }catch(e){} SS.osc=osc; osc.start(t0); vib.start(t0); osc.stop(t+0.05); vib.stop(t+0.05);
   animate(t0, mets, sc);
 }
 function animate(t0, mets, sc){
@@ -955,14 +987,14 @@ document.getElementById('lookBtn').addEventListener('click', ()=>lookUp(document
 const $=id=>document.getElementById(id);
 const SS={
   reduce:()=>$('rRed').getAttribute('aria-pressed')!=='false',
-  faces:'<svg class="face ghost" viewBox="0 0 24 24"><path d="M4 22V11a8 8 0 0 1 16 0v11l-3-2.5-2.5 2.5L12 19.5 9.5 22 7 19.5Z" fill="#dff3ff" fill-opacity=".9"/><path d="M8 11q1.5 1.6 3 0M13 11q1.5 1.6 3 0" stroke="#2a3a66" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>'
-    +'<svg class="face robot" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2" fill="#9aa7b8"/><path d="M12 7V3" stroke="#9aa7b8" stroke-width="2"/><circle cx="12" cy="3" r="1.6" fill="#ff5a5a"/><rect x="7" y="11" width="4" height="3" fill="#10202e"/><rect x="13" y="11" width="4" height="3" fill="#10202e"/><rect x="8" y="16.5" width="8" height="1.8" fill="#10202e"/></svg>'
+  faces:'<svg class="face fghost" viewBox="0 0 24 24"><path d="M4 22V11a8 8 0 0 1 16 0v11l-3-2.5-2.5 2.5L12 19.5 9.5 22 7 19.5Z" fill="#dff3ff" fill-opacity=".9"/><path d="M8 11q1.5 1.6 3 0M13 11q1.5 1.6 3 0" stroke="#2a3a66" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>'
+    +'<svg class="face frobot" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2" fill="#9aa7b8"/><path d="M12 7V3" stroke="#9aa7b8" stroke-width="2"/><circle cx="12" cy="3" r="1.6" fill="#ff5a5a"/><rect x="7" y="11" width="4" height="3" fill="#10202e"/><rect x="13" y="11" width="4" height="3" fill="#10202e"/><rect x="8" y="16.5" width="8" height="1.8" fill="#10202e"/></svg>'
     +'<svg class="face bite" viewBox="0 0 24 24"><path d="M2 9q10-6 20 0-1 11-10 11T2 9Z" fill="#6b1230"/><path d="M4 10l2.5 3L9 10zM10.5 10l2 3.2 2-3.2zM15 10l2.5 3L20 10z" fill="#fff"/></svg>',
   _t0:null,_last:-1
 };
 
 /* ---- 1. skins ---- */
-const SKINS=[['coaster','Rollercoaster'],['dj','DJ Booth'],['monster','Monster Kitchen']];
+const SKINS=[['coaster','Rollercoaster'],['dj','DJ Booth'],['monster','Monster Kitchen'],['day','Day Mode']];
 function setSkin(k,toast){
   if(!SKINS.some(s=>s[0]===k)) k='coaster';
   document.body.dataset.theme=k;
@@ -1067,16 +1099,17 @@ Tap.start=function(){
 Tap.tapAt=function(){
   if(!Tap.run) return; const now=performance.now()/1000-Tap.t0; blip(1500,.05,.08);
   let best=null,bd=9; Tap.toks.forEach(k=>{ const d=Math.abs(k.time-now); if(!k.tap&&d<bd){ bd=d; best=k; } });
-  if(best&&bd<.3){ best.tap=1; if(best.s){ Tap.hits++; best.el.classList.add('hit'); } else { Tap.extra++; best.el.classList.add('miss'); } } else Tap.extra++;
+  if(best&&bd<.35){ best.tap=1; if(best.s){ Tap.hits++; best.el.classList.add('hit'); } else { Tap.extra++; best.el.classList.add('miss'); } } else Tap.extra++;
 };
 Tap.finish=function(){
   Tap.run=false; $('tapGo').textContent='Play again';
   const weakN=Tap.toks.filter(k=>!k.s).length, stN=Tap.toks.length-weakN;
   let svg,msg;
   if(Tap.extra>=Math.max(2,Math.ceil(weakN*.5))){ svg=ROBOT; msg='<b>Robot mode!</b> You tapped '+Tap.extra+' small words. Japanese is <b>mora-timed</b>: every beat is equal. English is <b>stress-timed</b>: the big words keep the beat and the small ones get squished in between.'; }
-  else if(Tap.hits>=Math.ceil(stN*.6)){ svg=CAT; msg='<b>Jazz Cat is grooving!</b> '+Tap.hits+' of '+stN+' stressed words, and the small words stayed quiet. That is English stress-timed rhythm.'; }
-  else { svg=ROBOT; msg='Almost! Wait for the <b>big amber words</b> and feel the heartbeat thump. Try again.'; }
-  $('tapRes').innerHTML=svg+'<div class="msg">'+msg+'</div>';
+  else if(Tap.hits>=Math.ceil(stN*.5)){ svg=CAT; msg='<b>Jazz Cat is grooving!</b> '+Tap.hits+' of '+stN+' stressed words, and the small words stayed quiet. That is English stress-timed rhythm.'; }
+  else { svg=ROBOT; msg='You caught '+Tap.hits+' of '+stN+' heartbeats. Wait for the <b>big amber words</b> to touch the dashed line, then tap. Try again!'; }
+  $('tapRes').innerHTML='<button class="charbtn" id="charBtn" aria-label="Play again">'+svg+'</button><div class="msg">'+msg+' <b>Tap the character to play again.</b></div>';
+  $('charBtn').addEventListener('click',()=>Tap.start()); Tap.draw(0);
 };
 $('tapStage').addEventListener('pointerdown',e=>{ e.preventDefault(); Tap.tapAt(); });
 $('tapGo').addEventListener('click',()=>Tap.start());
@@ -1105,6 +1138,7 @@ SS.ride=function(){
   cart.animate(kf,{duration:2200,easing:'linear',fill:'forwards'});
 };
 $('rideBtn').addEventListener('click',()=>SS.ride());
+document.addEventListener('click',e=>{ if(e.target.closest('[data-play]')&&current) play(current,{}); });
 
 /* ================= init ================= */
 buildLib('');
